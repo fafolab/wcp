@@ -349,6 +349,24 @@ Every executed dispatch MUST return an evidence receipt containing at minimum:
 - `controls_verified`
 - `artifact_hash` (SHA-256 of the request payload)
 
+#### Receipt Chain Fields (v0.3.x roadmap)
+
+Implementations SHOULD include the following additional fields to support
+hash-chain ledger and Merkle proof architecture. These are required for
+FWP (Flood-em-with-Proof) courtroom-grade non-repudiation:
+
+- `receipt_id` — UUIDv7, unique per decision event
+- `prev_receipt_hash` — SHA-256 of previous receipt in stream (per tenant/session); NULL for first in stream
+- `receipt_hash` — SHA-256 of canonical receipt JSON (keys sorted lexicographically, compact, excluding `receipt_hash` and `signature` fields)
+- `signing_key_id` — key identifier for verifying signature
+- `signature` — Ed25519 signature over `receipt_hash`
+
+**Canonical serialization:** JSON with keys sorted lexicographically, no
+trailing whitespace, compact (no spaces). Implementation MUST pin this
+spec version in the `receipt_hash` computation.
+
+**Chain breaks MUST be treated as sev1 integrity events.**
+
 ### 5.8 Human-in-Loop (REQUIRE_HUMAN)
 
 When a policy gate returns `REQUIRE_HUMAN`, the Hall MUST NOT silently approve or deny. It MUST:
@@ -666,7 +684,42 @@ The WCP catalog (capability IDs, worker classes, controls, policies, profiles) i
 
 ---
 
-## 12. Reference Implementation
+## 12. Namespace Taxonomy
+
+WCP defines two namespace categories:
+
+### Protocol namespaces (reserved — language primitives)
+
+Used in WCP declarations only. Not used for trust attribution.
+
+| Prefix | Scope |
+|--------|-------|
+| `cap.*` | Capabilities |
+| `wrk.*` | Worker species (taxonomy identifier, not trust authority) |
+| `ctrl.*` | Controls |
+| `pol.*` | Policies |
+| `prof.*` | Profiles |
+| `evt.*` | Events |
+
+### Tenant signer namespaces (authority — trust attribution source)
+
+Used in `worker_id` to identify the signing authority.
+
+| Prefix | Scope |
+|--------|-------|
+| `org.<name>.*` | Named organization tenant |
+| `x.<name>.*` | Extended/experimental tenant |
+
+**Critical rule:** Attestation trust attribution MUST be based on the tenant
+signer namespace extracted from `worker_id`, never from `worker_species_id`.
+
+A `worker_species_id` of `wrk.example.analyst` conveys taxonomy only —
+it does not confer any trust authority. Trust derives from the `org.*` or
+`x.*` namespace in `worker_id`.
+
+---
+
+## 13. Reference Implementation
 
 **PyHall** — Python reference implementation of WCP
 
@@ -685,7 +738,7 @@ pyhall status
 
 ---
 
-## 13. References
+## 14. References
 
 *(Research corpus — see /wcp/research/ for full records with hashes and summaries)*
 
