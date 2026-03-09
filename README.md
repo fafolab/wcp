@@ -23,9 +23,9 @@ The protocol specification is in [`WCP_SPEC.md`](./WCP_SPEC.md).
 |----------|---------|--------|
 | Python | `pip install pyhall` | Reference implementation — WCP-Full |
 | TypeScript | `npm install @pyhall/core` | Full port — WCP-Full |
-| Go | `go get github.com/fafolab/pyhall/sdk/go` | Scaffold / interfaces |
+| Go | `go get github.com/pyhall/pyhall-go@latest` | Scaffold / interfaces |
 
-**PyHall** is the reference implementation: [github.com/fafolab/pyhall](https://github.com/fafolab/pyhall) · [pyhall.dev](https://pyhall.dev)
+**PyHall** is the reference implementation: [github.com/pyhall](https://github.com/pyhall) · [pyhall.dev](https://pyhall.dev)
 
 ---
 

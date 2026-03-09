@@ -1,14 +1,14 @@
 # WCP — Worker Class Protocol
 **Specification Version:** 0.1
 **Status:** Published
-**Authors:** Rob Kennedy, FΔFΌ★LΔB
-**Repository:** github.com/fafolab/wcp
+**Founder:** Rob Kennedy · workerclassprotocol.dev
+**Repository:** github.com/workerclassprotocol/wcp
 **Reference Implementation:** PyHall (Python)
 **Date:** 2026-02-24
 
 ---
 
-> *"PyHall is FΔFΌ★LΔB's reference implementation of WCP.*
+> *"PyHall is the reference implementation of WCP.*
 > *WCP belongs to whoever needs it."*
 
 ---
@@ -562,14 +562,14 @@ Workers register in the Hall via a **registry record**:
     "reversibility": "reversible"
   },
   "owner": "org.fafolab",
-  "contact": "rob@fafolab.ai",
+  "contact": "https://workerclassprotocol.dev/contact/",
   "artifact_hash": "sha256:...",
   "catalog_version_min": "1.0.0",
   "attestation": {
     "code_hash": "sha256:a3f9c2...",
     "hash_method": "file",
     "attested_at": "2026-02-25T00:00:00Z",
-    "attested_by": "rob@fafolab.ai"
+    "attested_by": "namespace-key@org.example"
   }
 }
 ```
@@ -656,7 +656,7 @@ All three can coexist. A WCP-governed worker can be exposed as an MCP tool. A2A 
 
 ## 11. Governance
 
-WCP is an open concept. FΔFΌ★LΔB publishes this specification as a starting point for community adoption and expansion.
+WCP is an open concept. workerclassprotocol.dev publishes this specification as a starting point for community adoption and expansion.
 
 **There is no foundation. There is no committee.**
 
@@ -670,8 +670,8 @@ The WCP catalog (capability IDs, worker classes, controls, policies, profiles) i
 
 **PyHall** — Python reference implementation of WCP
 
-- Repository: github.com/fafolab/pyhall
-- WCP Spec: github.com/fafolab/wcp
+- Repository: github.com/pyhall
+- WCP Spec: github.com/workerclassprotocol/wcp
 - Package: `pip install pyhall`
 - License: Apache 2.0
 - Python: 3.10+
@@ -727,5 +727,5 @@ pyhall status
 ---
 
 *WCP Specification v0.1*
-*FΔFΌ★LΔB — fafolab.ai*
+*workerclassprotocol.dev*
 *Published: 2026-02-28*
