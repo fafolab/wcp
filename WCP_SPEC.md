@@ -186,7 +186,7 @@ WCP adopts the domain-prefix + dot-separation pattern used across these standard
 | `pol.*` | WCP catalog | Permanent once published |
 | `prof.*` | WCP catalog | Permanent once published |
 | `evt.*` | WCP catalog | Permanent once published |
-| `x.*` | Community / experimental | No stability guarantee |
+| `x.*` | Individual/personal tenant | Owner's discretion |
 | `org.<name>.*` | Organization-private | Owner's discretion |
 
 No entity outside the WCP catalog may publish IDs in the reserved namespaces.
@@ -708,7 +708,7 @@ Used in `worker_id` to identify the signing authority.
 | Prefix | Scope |
 |--------|-------|
 | `org.<name>.*` | Named organization tenant |
-| `x.<name>.*` | Extended/experimental tenant |
+| `x.<name>.*` | Individual/personal authority tenant |
 
 **Critical rule:** Attestation trust attribution MUST be based on the tenant
 signer namespace extracted from `worker_id`, never from `worker_species_id`.
