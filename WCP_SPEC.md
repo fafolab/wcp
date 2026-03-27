@@ -1,17 +1,8 @@
 # WCP — Worker Class Protocol
-**Specification Version:** 0.2
-**Status:** Published
-**Founder:** Rob Kennedy · workerclassprotocol.dev
-**Repository:** github.com/workerclassprotocol/wcp
-**Reference Implementation:** PyHall (Python)
-**Date:** 2026-03-26
 
----
+**Version:** 0.2 &ensp; · &ensp; **Status:** Published &ensp; · &ensp; **Date:** 2026-03-26
 
-> *"PyHall is the reference implementation of WCP.*
-> *WCP belongs to whoever needs it."*
-
----
+> *"The protocol belongs to whoever needs it. Build on it. Fork it. Make it yours."*
 
 ## Abstract
 
@@ -27,9 +18,9 @@ WCP is designed for the small developer, the home lab, and the enterprise. It sc
 
 ## 1. Problem Statement
 
-87% of AI agent systems lack safety cards. [REF-012]
+The majority of AI agent systems lack safety cards.
 
-Every major agent protocol — MCP [REF-001], A2A [REF-003], ACP [REF-004], AGNTCY [REF-005] — defines how agents communicate. None define whether a worker should be trusted to execute, under what controls, with what blast radius, and with what evidence.
+Every major agent protocol — MCP, A2A, ACP, AGNTCY — defines how agents communicate. None define whether a worker should be trusted to execute, under what controls, with what blast radius, and with what evidence.
 
 The result is predictable:
 
@@ -77,7 +68,7 @@ cap.db.write
 
 ### 2.2 Worker Species
 
-A **worker species** (also referred to as worker class) is a stable identifier for the type of worker that implements a capability. A worker species is a taxonomy identifier — it describes the class of worker, not its authority or trust context.
+A **worker species** is a stable identifier for the type of worker that implements a capability. A worker species is a taxonomy identifier — it describes the class of worker, not its authority or trust context.
 
 ```
 wrk.<domain>[.<subdomain>].<role>
@@ -93,7 +84,7 @@ wrk.web.fetcher
 wrk.research.registrar
 ```
 
-Worker classes mirror their capabilities: `cap.doc.summarize` → `wrk.doc.summarizer`. The naming convention enforces the relationship.
+Worker species mirror their capabilities: `cap.doc.summarize` → `wrk.doc.summarizer`. The naming convention enforces the relationship.
 
 ### 2.3 Control
 
@@ -142,9 +133,9 @@ prof.mem.rag_strict       — RAG: strict scoped retrieval
 
 The same worker fleet runs in development chaos mode and production discipline mode by swapping profiles — no code changes.
 
-### 2.6 The Hall
+### 2.6 Router
 
-The **Hall** (registry + router) is the central dispatch authority. When an agent needs a worker, it contacts the Hall. The Hall:
+The **router** (registry + dispatch authority) is the central dispatch component. When an agent needs a worker, it contacts the router. The router:
 
 1. Receives a capability request
 2. Matches it against routing rules
@@ -154,7 +145,7 @@ The **Hall** (registry + router) is the central dispatch authority. When an agen
 6. Issues a routing decision with evidence
 7. Dispatches (or denies with reason)
 
-Agents are like contractors. Contractors who are signatory to the Hall can access trained, certified workers. Agents that adopt WCP get access to the governed worker fleet.
+Agents that adopt WCP get access to the governed worker fleet. The router ensures every dispatch is governed, auditable, and attributable.
 
 ---
 
@@ -166,15 +157,13 @@ WCP identifier design follows established technology industry conventions. The d
 
 | Standard | Pattern | Example | WCP parallel |
 |----------|---------|---------|--------------|
-| MITRE ATT&CK [REF-016] | `TA<N>` / `T<N>.<N>` | `T1566.001` = Spearphishing | `cap.doc.summarize` — stable, hierarchical |
-| NIST SP 800-53 [REF-017] | `<Domain>-<N>` | `AC-2` = Account Management | `ctrl.identity.secrets_deny_default` |
-| OpenTelemetry SemConv [REF-006, REF-018] | `<domain>.<attribute>` | `gen_ai.request.model` | `cap.ml.infer`, `evt.os.task.routed` |
-| CWE [REF-019] | `CWE-<N>` | `CWE-89` = SQL Injection | `ctrl.*` controls map to CWE mitigations |
-| OWASP ASVS [REF-020] | `V<N>` levels | L1/L2/L3 verification | WCP-Basic/Standard/Full compliance levels |
+| MITRE ATT&CK | `TA<N>` / `T<N>.<N>` | `T1566.001` = Spearphishing | `cap.doc.summarize` — stable, hierarchical |
+| NIST SP 800-53 | `<Domain>-<N>` | `AC-2` = Account Management | `ctrl.identity.secrets_deny_default` |
+| OpenTelemetry SemConv | `<domain>.<attribute>` | `gen_ai.request.model` | `cap.ml.infer`, `evt.os.task.routed` |
+| CWE | `CWE-<N>` | `CWE-89` = SQL Injection | `ctrl.*` controls map to CWE mitigations |
+| OWASP ASVS | `V<N>` levels | L1/L2/L3 verification | WCP-Basic/Standard/Full compliance levels |
 
 WCP adopts the domain-prefix + dot-separation pattern used across these standards: short domain identifiers, human-readable without a lookup table, machine-parseable, and stable once published.
-
-**No pack numbers.** WCP organizes capabilities by domain namespace (`cap.doc.*`, `cap.mem.*`, `cap.obs.*`) — not by arbitrary numbered groupings. The domain prefix IS the organizing principle, consistent with how NIST, OTel, and ATT&CK all work.
 
 ### 3.1 Namespace Ownership
 
@@ -202,7 +191,7 @@ Authority namespaces identify the owner/authority behind a worker. They are used
 | `org.<name>.*` | Organizations, companies, teams, business entities | Owner's discretion |
 | `x.<name>.*` | Individuals, personal namespaces, solo developers | Owner's discretion |
 
-`org.<name>.*` and `x.<name>.*` are the only two authority namespace families defined by WCP. Note that `x.<name>.*` means individual/personal authority — it does not mean "experimental."
+`org.<name>.*` and `x.<name>.*` are the only two authority namespace families defined by WCP. `x.<name>.*` denotes individual/personal authority.
 
 ### 3.2 Format Rules
 
@@ -318,7 +307,7 @@ Every WCP dispatch begins with a **RouteInput** and produces a **RouteDecision**
 
 ## 5. Required Behaviors
 
-Any WCP-compliant implementation MUST [REF-008]:
+Any WCP-compliant implementation MUST:
 
 ### 5.1 Fail Closed
 If no routing rule matches a capability request, the decision MUST be `denied: true`. Unknown capabilities are never executed. No exceptions.
@@ -337,7 +326,7 @@ Every dispatch MUST emit three minimum telemetry events:
 
 The `correlation_id` MUST be propagated through all three events and through all downstream worker calls.
 
-**OpenTelemetry compatibility:** Workers that invoke LLMs SHOULD emit the following OpenTelemetry Generative AI semantic convention attributes [REF-018] within their telemetry events for out-of-the-box compatibility with existing OTel pipelines:
+**OpenTelemetry compatibility:** Workers that invoke LLMs SHOULD emit the following OpenTelemetry Generative AI semantic convention attributes within their telemetry events for out-of-the-box compatibility with existing OTel pipelines:
 - `gen_ai.request.model` — the model name requested
 - `gen_ai.usage.input_tokens` — tokens consumed in the prompt
 - `gen_ai.usage.output_tokens` — tokens in the completion
@@ -347,7 +336,7 @@ The `correlation_id` MUST be propagated through all three events and through all
 Every WCP router MUST support `"dry_run": true`. In dry-run mode, the full routing decision is made and returned but no worker is executed. Dry-run MUST be fully functional for all capabilities.
 
 ### 5.6 Capability Discovery
-A WCP-compliant Hall MUST respond to:
+A WCP-compliant router MUST respond to:
 - `GET /wcp/capabilities` — all registered capabilities
 - `GET /wcp/workers` — all enrolled workers
 - `GET /wcp/health` — compliance status
@@ -382,7 +371,7 @@ spec version in the `receipt_hash` computation.
 
 ### 5.8 Human-in-Loop (REQUIRE_HUMAN)
 
-When a policy gate returns `REQUIRE_HUMAN`, the Hall MUST NOT silently approve or deny. It MUST:
+When a policy gate returns `REQUIRE_HUMAN`, the router MUST NOT silently approve or deny. It MUST:
 
 1. Return a `RouteDecision` with `denied: false` and `supervisor_required: true`
 2. Include `supervisor_level` in the decision — one of:
@@ -390,7 +379,7 @@ When a policy gate returns `REQUIRE_HUMAN`, the Hall MUST NOT silently approve o
    - `gatekeeper` — human must approve before execution
    - `executor` — human executes the action instead of the worker
    - `incident_commander` — human takes full control; all agent actions subordinate
-3. Expose the pending decision via the discovery API (`GET /wcp/approvals/pending`)
+3. Expose the pending decision via the router's discovery API (`GET /wcp/approvals/pending`)
 4. Accept a resolution via a pluggable `HumanApprovalCallback`
 
 **The approval mechanism is intentionally unspecified.** WCP defines the contract. Implementations wire whatever H2A channel fits their environment — webhook, email, Slack, Discord, ServiceNow, or a custom UI.
@@ -419,22 +408,20 @@ cap.ops.approve      — worker that facilitates human approval
 wrk.ops.human-approver — the worker species that routes pending approvals to humans
 ```
 
-Any WCP implementation that handles high-risk capabilities SHOULD implement `cap.ops.approve` as part of its worker fleet. The worker receives the pending approval context, routes it to the human via whatever H2A channel is configured, and submits the resolution back to the Hall.
+Any WCP implementation that handles high-risk capabilities SHOULD implement `cap.ops.approve` as part of its worker fleet. The worker receives the pending approval context, routes it to the human via whatever H2A channel is configured, and submits the resolution back to the router.
 
-**MCP tool exposure** (for external systems to complete approvals):
+**Approval endpoints** are exposed via the router's discovery API:
 ```
-wcp.approvals.list     — list all pending REQUIRE_HUMAN decisions
-wcp.approval.resolve   — submit human decision (approve | deny | escalate)
-wcp.approval.escalate  — escalate supervisor level (gatekeeper → incident_commander)
+GET  /wcp/approvals/pending    — list all pending REQUIRE_HUMAN decisions
+POST /wcp/approvals/resolve    — submit human decision (approve | deny | escalate)
+POST /wcp/approvals/escalate   — escalate supervisor level (gatekeeper → incident_commander)
 ```
 
-This makes WCP-governed approval workflows callable from any MCP-compatible client — a Discord bot, a web dashboard, a mobile app, or an enterprise ITSM integration.
+This makes WCP-governed approval workflows callable from any compatible client — a Discord bot, a web dashboard, a mobile app, or an enterprise ITSM integration.
 
 ### 5.9 Signatory Tenant Validation
 
-In a union hiring hall, only **signatory contractors** — those who have signed a labor agreement with the hall — can dispatch workers. An unknown contractor showing up at the dispatch window is turned away, no matter how urgent the job.
-
-WCP implements the same principle. When `require_signatory` is enabled, the Hall MUST deny any `RouteInput` whose `tenant_id` is not in the registered signatory list.
+When `require_signatory` is enabled, the router MUST deny any `RouteInput` whose `tenant_id` is not in the registered signatory list. Only registered tenants — those explicitly added to the router's allow list — can dispatch workers. An unregistered tenant is denied, regardless of how urgent the request.
 
 **Configuration:**
 
@@ -470,13 +457,13 @@ WCP implements the same principle. When `require_signatory` is enabled, the Hall
   "denied": true,
   "deny_reason_if_denied": {
     "code": "DENY_UNKNOWN_TENANT",
-    "message": "Tenant is not registered as a signatory. Register via the Hall configuration before dispatching workers.",
+    "message": "Tenant is not registered as a signatory. Register via the router configuration before dispatching workers.",
     "tenant_id": "<redacted-or-full>"
   }
 }
 ```
 
-The Hall MAY redact the tenant_id in the error payload in production environments.
+The router MAY redact the tenant_id in the error payload in production environments.
 
 ### 5.10 Worker Code Attestation
 
@@ -488,22 +475,22 @@ A worker is only as trustworthy as its code. A compromised worker — one whose 
 1. XYZ Company builds cap.doc.summarize worker
 2. Attacker gains access, modifies worker code
 3. Modified worker silently forwards payloads to attacker's endpoint
-4. Hall dispatches it normally — it sees a valid capability ID, valid tenant
+4. Router dispatches it normally — it sees a valid capability ID, valid tenant
 5. Data exfiltrated. Evidence receipt shows nothing wrong. Attack is silent.
 ```
 
 **The defense — Worker Code Attestation:**
 
-When a worker is enrolled in the Hall, its code hash (SHA-256) is registered as the **known-good fingerprint**. At every dispatch, the Hall computes or retrieves the worker's current hash and compares it to the registered hash. A mismatch means the worker has been modified — dispatch is denied and the worker is flagged.
+When a worker is enrolled in the router, its code hash (SHA-256) is registered as the **known-good fingerprint**. At every dispatch, the router computes or retrieves the worker's current hash and compares it to the registered hash. A mismatch means the worker has been modified — dispatch is denied and the worker is flagged.
 
 ```
 Registration:
   developer builds worker → computes SHA-256 of worker code
-  → registers hash with Hall (and optionally with pyhall.dev)
-  → Hall stores: { worker_species_id, registered_code_hash, attested_at }
+  → registers hash with router (and optionally with an external attestation authority)
+  → router stores: { worker_species_id, registered_code_hash, attested_at }
 
 Dispatch (when require_worker_attestation: true):
-  Hall selects candidate worker
+  router selects candidate worker
   → retrieves registered_code_hash from registry
   → computes current_hash from live worker (file, module, or image digest)
   → MATCH → dispatch proceeds, attestation_valid: true in evidence receipt
@@ -546,7 +533,7 @@ Dispatch (when require_worker_attestation: true):
 | File hash | SHA-256 of worker Python file at dispatch | Local workers, simple deployments |
 | Module hash | SHA-256 of compiled bytecode + source | Python packages |
 | Container digest | OCI image digest (immutable) | Containerized workers |
-| Signed manifest | pyhall.dev-issued signed attestation bundle | Multi-tenant, enterprise |
+| Signed manifest | Authority-issued signed attestation bundle | Multi-tenant, enterprise |
 
 **Configuration:**
 
@@ -558,107 +545,13 @@ Dispatch (when require_worker_attestation: true):
 
 **Default:** `false`. WCP-Full compliance requires `require_worker_attestation: true` in production.
 
-**pyhall.dev as attestation authority (v0.2+):** In v0.1, attestation hashes are stored in the local Hall registry. In v0.2, developers may register worker hashes with pyhall.dev, which issues a signed attestation manifest. pyhall.dev can also publish a **global ban list** — known-compromised hashes that any Hall operator can subscribe to, refusing dispatch of banned workers regardless of local registry state.
+**External attestation authority (v0.2+):** In v0.1, attestation hashes are stored in the local router registry. In v0.2, worker hashes MUST be registered with a third-party external attestation authority, which issues a signed attestation manifest. An attestation authority MUST publish a **global ban list** — known-compromised hashes that any router operator can subscribe to, refusing dispatch of banned workers regardless of local registry state.
 
-**On trust:** Attestation does not prevent a sufficiently privileged attacker from modifying both the worker and its registered hash simultaneously. It closes the common case: unauthorized code modification by an attacker who does not have access to the Hall's registry. Combined with signatory tenant validation (§5.9) and the cryptographic evidence receipt, WCP establishes an auditable chain of custody that proves — in post-incident review or litigation — exactly what ran, when, and whether it matched what the developer originally registered.
-
----
-
-## 6. Worker Enrollment
-
-Workers register in the Hall via a **registry record**:
-
-```json
-{
-  "worker_id": "org.fafolab.doc-summarizer",
-  "worker_species_id": "wrk.doc.summarizer",
-  "capabilities": ["cap.doc.summarize"],
-  "risk_tier": "low",
-  "idempotency": "full",
-  "determinism": "captured",
-  "required_controls": ["ctrl.obs.audit_log_append_only"],
-  "currently_implements": ["ctrl.obs.audit_log_append_only"],
-  "allowed_environments": ["dev", "stage", "prod"],
-  "privilege_envelope": {
-    "secrets_access": [],
-    "network_egress": "none",
-    "filesystem_writes": ["/tmp/summaries/"],
-    "tools": ["ollama-embed"]
-  },
-  "blast_radius": {
-    "data": 1,
-    "network": 0,
-    "financial": 0,
-    "time": 1,
-    "reversibility": "reversible"
-  },
-  "owner": "org.fafolab",
-  "contact": "https://workerclassprotocol.dev/contact/",
-  "artifact_hash": "sha256:...",
-  "catalog_version_min": "1.0.0",
-  "attestation": {
-    "code_hash": "sha256:a3f9c2...",
-    "hash_method": "file",
-    "attested_at": "2026-02-25T00:00:00Z",
-    "attested_by": "namespace-key@org.example"
-  }
-}
-```
-
-### 6.1 Worker Identity
-
-A `worker_id` identifies a specific enrolled worker instance. It carries the authority namespace that determines trust attribution.
-
-**Format:**
-
-```
-<authority-namespace>.<worker-name>[.<instance-suffix>]
-```
-
-**Examples:**
-
-```
-org.xyzcompany.doc-summarizer.prod-01
-org.abcdevelopmentcorp.registry-manager.prod-02
-x.joe.local-research-worker.dev-01
-x.lisajohnson.mem-curator.laptop-01
-```
-
-The authority namespace is extracted from the leading segments of `worker_id`:
-
-- `org.xyzcompany.doc-summarizer.prod-01` → authority namespace: `org.xyzcompany`
-- `x.joe.local-research-worker.dev-01` → authority namespace: `x.joe`
-
-### 6.2 Trust Attribution
-
-Attestation and trust attribution MUST be based on the authority namespace carried by `worker_id`.
-
-Trust attribution MUST NOT be derived from:
-
-- `worker_species_id` — this is taxonomy, not authority
-- `capability_id` — this is a contract, not ownership
-- any `wrk.*` prefix — this conveys species classification only
-
-**Correct reasoning:**
-
-```
-This worker is trusted under org.xyzcompany because its worker_id is
-org.xyzcompany.doc-summarizer.prod-01.
-Its species is wrk.doc.summarizer.
-It implements cap.doc.summarize.
-```
-
-**Incorrect reasoning:**
-
-```
-This worker is trusted because its species starts with wrk.doc.
-```
-
-The separation is: `worker_id` carries authority, `worker_species_id` carries taxonomy, `capability_id` carries the contract.
+**On trust:** Attestation does not prevent a sufficiently privileged attacker from modifying both the worker and its registered hash simultaneously. It closes the common case: unauthorized code modification by an attacker who does not have access to the router's registry. Combined with signatory tenant validation (section 5.9) and the cryptographic evidence receipt, WCP establishes an auditable chain of custody that proves — in post-incident review or litigation — exactly what ran, when, and whether it matched what the developer originally registered.
 
 ---
 
-## 7. Blast Radius
+## 6. Blast Radius
 
 Before dispatching a worker, the router computes a **blast score** — the potential damage radius if the worker fails or behaves unexpectedly.
 
@@ -674,185 +567,42 @@ Blast score is the sum of five dimensions (0-5 each):
 
 Routing rules declare maximum blast score per environment. Requests exceeding the threshold are denied or escalated for human review.
 
-**Blast radius is additive in worker chains.** If Worker A (score 3) calls Worker B (score 4), total chain blast = 7. The router accounts for chain propagation.
+**Blast radius is additive in worker chains.** The router accounts for chain propagation:
+
+```
+Worker A blast score:      3
+Worker B blast score:    + 4
+                         ───
+Total chain blast:       = 7
+```
+
+If the total chain blast exceeds the environment threshold, the dispatch is denied or escalated.
 
 ---
 
-## 8. Compliance Levels
+## 7. Compliance Levels
 
 | Level | Requirements |
 |-------|-------------|
 | **WCP-Basic** | Capability routing, fail-closed, deterministic |
 | **WCP-Standard** | + Controls enforcement, mandatory telemetry, dry-run |
-| **WCP-Full** | + Blast radius, privilege envelopes, policy gate, evidence receipts, discovery API, signatory tenant validation (`require_signatory: true`), worker code attestation (`require_worker_attestation: true`) |
-
-PyHall implements WCP-Full.
+| **WCP-Full** | + Blast radius, privilege envelopes, policy gate, evidence receipts, discovery API, signatory tenant validation (`require_signatory: true`), worker code attestation via third-party external attestation authority (`require_worker_attestation: true`) |
 
 ---
 
-## 9. The Five-Worker Pipeline Pattern
-
-The following pipeline demonstrates WCP in production — five workers chained with correlation propagation, each with distinct capabilities and blast scores.
-
-This pipeline is used by FΔFΌ★LΔB to ingest research documents into the WCP knowledge graph. It is included as the canonical multi-worker example.
-
-```
-cap.web.fetch → cap.doc.chunk → cap.ml.embed → cap.doc.hash → cap.research.register
-
-Worker chain:
-  web_fetcher    (blast: 1, reversible)     — fetch URL, extract clean text
-  doc_chunker    (blast: 0, reversible)     — semantic chunking ~500 tokens
-  embedder       (blast: 1, reversible)     — nomic-embed-text via Ollama
-  doc_hasher     (blast: 0, deterministic)  — SHA-256 + optional signing
-  research_registrar (blast: 2, reversible) — SQLite + Neo4j + Qdrant
-
-Total chain blast: 4 (within WCP-Standard threshold for dev/INTERNAL)
-correlation_id: propagated through all 5 workers
-```
-
-Reference implementation: `PyHall/workers/examples/research_pipeline/`
-
----
-
-## 10. Relationship to Existing Protocols
-
-WCP is not a replacement for MCP, A2A, ACP, or AGNTCY. It is a governance layer that sits above transport protocols.
-
-```
-Agent reasoning (Claude, MΩNŦY, Codex, Gemini)
-         ↓
-WCP Hall (capability request → governed routing → dispatch)
-         ↓
-Transport (MCP stdio, HTTP, A2A, direct subprocess)
-         ↓
-Worker execution
-```
-
-WCP answers: *should this worker execute?*
-MCP answers: *how does the agent call the tool?*
-A2A answers: *how do agents communicate with each other?*
-
-All three can coexist. A WCP-governed worker can be exposed as an MCP tool. A2A agents can make WCP capability requests. The governance layer is additive, not exclusive.
-
----
-
-## 11. Governance
-
-WCP is an open concept. workerclassprotocol.dev publishes this specification as a starting point for community adoption and expansion.
-
-**There is no foundation. There is no committee.**
-
-Fork it. Implement it. Improve it. Publish your implementation. If WCP gains traction, the community will formalize governance. Until then: ship working code and let the spec evolve from real usage.
-
-The WCP catalog (capability IDs, worker species, controls, policies, profiles) is maintained in this repository. Community additions welcome via pull request with working implementation.
-
----
-
-## 12. Namespace Taxonomy
-
-WCP defines two namespace categories:
-
-### Protocol namespaces (reserved — language primitives)
-
-Used in WCP declarations only. Not used for trust attribution.
-
-| Prefix | Scope |
-|--------|-------|
-| `cap.*` | Capabilities |
-| `wrk.*` | Worker species (taxonomy identifier, not trust authority) |
-| `ctrl.*` | Controls |
-| `pol.*` | Policies |
-| `prof.*` | Profiles |
-| `evt.*` | Events |
-
-### Tenant signer namespaces (authority — trust attribution source)
-
-Used in `worker_id` to identify the signing authority.
-
-| Prefix | Scope |
-|--------|-------|
-| `org.<name>.*` | Named organization tenant |
-| `x.<name>.*` | Individual/personal authority tenant |
-
-**Critical rule:** Attestation trust attribution MUST be based on the tenant
-signer namespace extracted from `worker_id`, never from `worker_species_id`.
-
-A `worker_species_id` of `wrk.example.analyst` conveys taxonomy only —
-it does not confer any trust authority. Trust derives from the `org.*` or
-`x.*` namespace in `worker_id`.
-
----
-
-## 13. Reference Implementation
-
-**PyHall** — Python reference implementation of WCP
-
-- Repository: github.com/pyhall
-- WCP Spec: github.com/workerclassprotocol/wcp
-- Package: `pip install pyhall-wcp`
-- License: Apache 2.0
-- Python: 3.10+
-
-```bash
-pip install pyhall-wcp
-pyhall route --capability cap.doc.summarize --env dev --data-label INTERNAL
-pyhall enroll --worker my_summarizer/registry_record.json
-pyhall status
-```
-
----
-
-## 14. References
-
-*(Research corpus — see /wcp/research/ for full records with hashes and summaries)*
-
-| ID | Title | Source |
-|----|-------|--------|
-| REF-001 | MCP — Model Context Protocol | Anthropic |
-| REF-002 | Code Execution with MCP | Anthropic |
-| REF-003 | A2A — Agent-to-Agent Protocol | Google / Linux Foundation |
-| REF-004 | ACP — Agent Communication Protocol | IBM BeeAI |
-| REF-005 | AGNTCY / OASF | Cisco + LangChain coalition |
-| REF-006 | OpenTelemetry Semantic Conventions | CNCF |
-| REF-007 | OSGi Capability/Requirement Specification | OSGi Alliance |
-| REF-008 | RFC 2119 — Key Words for RFCs | IETF |
-| REF-009 | IANA Protocol Registration Procedures | IANA |
-| REF-010 | CloudEvents Specification | CNCF |
-| REF-011 | AI Agents in Action: Governance Foundations | World Economic Forum |
-| REF-012 | MIT CSAIL AI Agent Index 2025 | MIT CSAIL |
-| REF-013 | Cloudflare Code Mode MCP | Cloudflare |
-| REF-014 | NANDA AgentFacts | NANDA Project |
-| REF-015 | MCP Gateway Registry | agentic-community |
-| REF-016 | MITRE ATT&CK Framework | MITRE Corporation |
-| REF-017 | NIST SP 800-53 — Security and Privacy Controls | NIST |
-| REF-018 | OpenTelemetry Generative AI Semantic Conventions | CNCF / OTel SIG |
-| REF-019 | CWE — Common Weakness Enumeration | MITRE Corporation |
-| REF-020 | OWASP ASVS — Application Security Verification Standard | OWASP Foundation |
-| REF-021 | AI, A2A, and the Governance Gap | O'Reilly Radar (Shreshta Shyamsundar) |
-| REF-022 | Control Planes for Autonomous AI | O'Reilly Radar (Varun Raj) |
-| REF-023 | Why MCP Governance Isn't Optional Anymore | Knostic |
-| REF-024 | The 20 Biggest AI Governance Statistics and Trends of 2025 | Knostic |
-| REF-025 | The Agentic Governance Collapse | AIGN Global |
-| REF-026 | EU AI Act, Article 12 — Record-Keeping for High-Risk AI | European Commission |
-| REF-027 | Moffatt v. Air Canada — AI Chatbot Misrepresentation | BC Civil Resolution Tribunal (2024) |
-| REF-028 | Garcia v. Character.AI — Product Liability for AI | Florida Federal Court (2024–2026) |
-| REF-029 | OpenAI Operator Unauthorized Purchase Incident | Washington Post (Feb 2025) |
-| REF-030 | FedRAMP AI Requirements — AU-12 Audit Generation | GSA / FedRAMP (2025) |
-| REF-031 | AI Governance Market Report — $309M to $1.42B (2025–2030) | Grand View Research / MarketsandMarkets |
-| REF-032 | NIST AI Agent Standards Initiative — Comment Period | NIST (Feb–Apr 2026) |
-
----
-
-## 15. Companion Documents
+## 8. Companion Documents
 
 The following documents provide additional detail on topics introduced in this specification:
 
-- **WCP Identity, Namespace, and Taxonomy Model** (`WCP_IDENTITY_NAMESPACE_AND_TAXONOMY_MODEL.md`) — defines the four-layer identity model (capability, worker species, worker identity, authority namespace), the separation between protocol namespaces and authority namespaces, and the rules for trust attribution.
+- **WCP Identity, Namespace, and Taxonomy Model:**<br>
+  [`WCP_IDENTITY_NAMESPACE_AND_TAXONOMY_MODEL.md`](https://github.com/workerclassprotocol/wcp/blob/main/WCP_IDENTITY_NAMESPACE_AND_TAXONOMY_MODEL.md) — defines the four-layer identity model (capability, worker species, worker identity, authority namespace), the separation between protocol namespaces and authority namespaces, and the rules for trust attribution.
 
-- **WCP Python Worker E2E Canonical Reference** (`WCP_PYTHON_WORKER_E2E_CANONICAL_REFERENCE.md`) — defines the canonical Python worker package layout, the 8-section file model, the two valid usage paths (full package vs. API-only), and the end-to-end execution flow for WCP-governed Python workers.
+- **WCP Python Worker E2E Canonical Reference:**<br>
+  [`WCP_PYTHON_WORKER_E2E_CANONICAL_REFERENCE.md`](https://github.com/workerclassprotocol/wcp/blob/main/WCP_PYTHON_WORKER_E2E_CANONICAL_REFERENCE.md) — defines the canonical Python worker package layout, the 8-section file model, the two valid usage paths (full package vs. API-only), and the end-to-end execution flow for WCP-governed Python workers.
+
+- **WCP Worker Enrollment Reference:**<br>
+  [`WCP_WORKER_ENROLLMENT_REFERENCE.md`](https://github.com/workerclassprotocol/wcp/blob/main/WCP_WORKER_ENROLLMENT_REFERENCE.md) — defines the enrollment JSON schema, worker identity format, and trust attribution rules for WCP-governed workers.
 
 ---
 
-*WCP Specification v0.1*
-*workerclassprotocol.dev*
-*Published: 2026-02-28*
+*WCP Specification v0.2 / workerclassprotocol.dev / Published: 2026-03-26*
