@@ -12,7 +12,7 @@ WCP is additive, not exclusive. MCP handles tool transport. A2A handles agent-to
 
 The protocol specification is in [`WCP_SPEC.md`](./WCP_SPEC.md).
 
-**Version:** 0.1 — Published
+**Version:** 0.2 — Published
 **Status:** Open for implementation and community contribution
 
 ---
@@ -21,7 +21,7 @@ The protocol specification is in [`WCP_SPEC.md`](./WCP_SPEC.md).
 
 | Language | Package | Status |
 |----------|---------|--------|
-| Python | `pip install pyhall` | Reference implementation — WCP-Full |
+| Python | `pip install pyhall-wcp` | Reference implementation — WCP-Full |
 | TypeScript | `npm install @pyhall/core` | Full port — WCP-Full |
 | Go | `go get github.com/pyhall/pyhall-go@latest` | Scaffold / interfaces |
 
@@ -54,6 +54,39 @@ A2A answers: *how do agents communicate with each other?*
 | **WCP-Basic** | Capability routing, fail-closed, deterministic |
 | **WCP-Standard** | + Controls enforcement, mandatory telemetry, dry-run |
 | **WCP-Full** | + Blast radius, privilege envelopes, policy gate, evidence receipts, discovery API, signatory tenant validation, worker attestation |
+
+---
+
+## Identity and Namespace Model
+
+WCP defines a four-layer identity model that separates capability contracts, worker taxonomy, worker instance identity, and authority namespaces:
+
+| Layer | Prefix | Answers |
+|-------|--------|---------|
+| **Capability** | `cap.*` | What must be possible? |
+| **Worker Species** | `wrk.*` | What class of worker does it? |
+| **Worker Identity** | `<authority>.<name>[.<suffix>]` | Which actual worker instance is enrolled? |
+| **Authority Namespace** | `org.<name>.*` / `x.<name>.*` | Who stands behind this worker? |
+
+Worker IDs carry the authority namespace that determines trust attribution:
+
+```
+org.xyzcompany.doc-summarizer.prod-01   — organization-owned worker
+x.joe.local-research-worker.dev-01      — individual-owned worker
+```
+
+Two authority namespace families are defined:
+
+- `org.<name>.*` — organizations, companies, teams
+- `x.<name>.*` — individuals, personal namespaces
+
+Trust attribution comes from the authority namespace in `worker_id`, never from `worker_species_id` or `capability_id`. Taxonomy membership comes from `worker_species_id`. These are not interchangeable.
+
+The full WCP taxonomy catalog contains 245 entities: 127 capabilities, 48 worker species, 33 controls, 4 policies, and 33 profiles.
+
+For the complete identity model, see [`WCP_IDENTITY_NAMESPACE_AND_TAXONOMY_MODEL.md`](./WCP_IDENTITY_NAMESPACE_AND_TAXONOMY_MODEL.md).
+
+For the canonical Python worker package layout and E2E reference, see [`WCP_PYTHON_WORKER_E2E_CANONICAL_REFERENCE.md`](./WCP_PYTHON_WORKER_E2E_CANONICAL_REFERENCE.md).
 
 ---
 

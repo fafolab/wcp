@@ -1,10 +1,10 @@
 # WCP — Worker Class Protocol
-**Specification Version:** 0.1
+**Specification Version:** 0.2
 **Status:** Published
 **Founder:** Rob Kennedy · workerclassprotocol.dev
 **Repository:** github.com/workerclassprotocol/wcp
 **Reference Implementation:** PyHall (Python)
-**Date:** 2026-02-24
+**Date:** 2026-03-26
 
 ---
 
@@ -75,9 +75,9 @@ cap.db.write
 
 **Capabilities are verbs.** They describe what must be possible, not what implements it.
 
-### 2.2 Worker Class
+### 2.2 Worker Species
 
-A **worker class** (species) is a stable identifier for the type of worker that implements a capability.
+A **worker species** (also referred to as worker class) is a stable identifier for the type of worker that implements a capability. A worker species is a taxonomy identifier — it describes the class of worker, not its authority or trust context.
 
 ```
 wrk.<domain>[.<subdomain>].<role>
@@ -178,6 +178,10 @@ WCP adopts the domain-prefix + dot-separation pattern used across these standard
 
 ### 3.1 Namespace Ownership
 
+WCP uses two distinct namespace families: **protocol namespaces** (reserved language primitives) and **authority namespaces** (trust attribution source).
+
+#### Protocol Namespaces
+
 | Prefix | Owner | Stability |
 |--------|-------|-----------|
 | `cap.*` | WCP catalog | Permanent once published |
@@ -186,10 +190,19 @@ WCP adopts the domain-prefix + dot-separation pattern used across these standard
 | `pol.*` | WCP catalog | Permanent once published |
 | `prof.*` | WCP catalog | Permanent once published |
 | `evt.*` | WCP catalog | Permanent once published |
-| `x.*` | Individual/personal tenant | Owner's discretion |
-| `org.<name>.*` | Organization-private | Owner's discretion |
 
-No entity outside the WCP catalog may publish IDs in the reserved namespaces.
+No entity outside the WCP catalog may publish IDs in the reserved protocol namespaces.
+
+#### Authority Namespaces
+
+Authority namespaces identify the owner/authority behind a worker. They are used in `worker_id` for trust attribution, enrollment identity, and attestation.
+
+| Prefix | Scope | Stability |
+|--------|-------|-----------|
+| `org.<name>.*` | Organizations, companies, teams, business entities | Owner's discretion |
+| `x.<name>.*` | Individuals, personal namespaces, solo developers | Owner's discretion |
+
+`org.<name>.*` and `x.<name>.*` are the only two authority namespace families defined by WCP. Note that `x.<name>.*` means individual/personal authority — it does not mean "experimental."
 
 ### 3.2 Format Rules
 
@@ -592,6 +605,57 @@ Workers register in the Hall via a **registry record**:
 }
 ```
 
+### 6.1 Worker Identity
+
+A `worker_id` identifies a specific enrolled worker instance. It carries the authority namespace that determines trust attribution.
+
+**Format:**
+
+```
+<authority-namespace>.<worker-name>[.<instance-suffix>]
+```
+
+**Examples:**
+
+```
+org.xyzcompany.doc-summarizer.prod-01
+org.abcdevelopmentcorp.registry-manager.prod-02
+x.joe.local-research-worker.dev-01
+x.lisajohnson.mem-curator.laptop-01
+```
+
+The authority namespace is extracted from the leading segments of `worker_id`:
+
+- `org.xyzcompany.doc-summarizer.prod-01` → authority namespace: `org.xyzcompany`
+- `x.joe.local-research-worker.dev-01` → authority namespace: `x.joe`
+
+### 6.2 Trust Attribution
+
+Attestation and trust attribution MUST be based on the authority namespace carried by `worker_id`.
+
+Trust attribution MUST NOT be derived from:
+
+- `worker_species_id` — this is taxonomy, not authority
+- `capability_id` — this is a contract, not ownership
+- any `wrk.*` prefix — this conveys species classification only
+
+**Correct reasoning:**
+
+```
+This worker is trusted under org.xyzcompany because its worker_id is
+org.xyzcompany.doc-summarizer.prod-01.
+Its species is wrk.doc.summarizer.
+It implements cap.doc.summarize.
+```
+
+**Incorrect reasoning:**
+
+```
+This worker is trusted because its species starts with wrk.doc.
+```
+
+The separation is: `worker_id` carries authority, `worker_species_id` carries taxonomy, `capability_id` carries the contract.
+
 ---
 
 ## 7. Blast Radius
@@ -680,7 +744,7 @@ WCP is an open concept. workerclassprotocol.dev publishes this specification as 
 
 Fork it. Implement it. Improve it. Publish your implementation. If WCP gains traction, the community will formalize governance. Until then: ship working code and let the spec evolve from real usage.
 
-The WCP catalog (capability IDs, worker classes, controls, policies, profiles) is maintained in this repository. Community additions welcome via pull request with working implementation.
+The WCP catalog (capability IDs, worker species, controls, policies, profiles) is maintained in this repository. Community additions welcome via pull request with working implementation.
 
 ---
 
@@ -725,12 +789,12 @@ it does not confer any trust authority. Trust derives from the `org.*` or
 
 - Repository: github.com/pyhall
 - WCP Spec: github.com/workerclassprotocol/wcp
-- Package: `pip install pyhall`
+- Package: `pip install pyhall-wcp`
 - License: Apache 2.0
 - Python: 3.10+
 
 ```bash
-pip install pyhall
+pip install pyhall-wcp
 pyhall route --capability cap.doc.summarize --env dev --data-label INTERNAL
 pyhall enroll --worker my_summarizer/registry_record.json
 pyhall status
@@ -776,6 +840,16 @@ pyhall status
 | REF-030 | FedRAMP AI Requirements — AU-12 Audit Generation | GSA / FedRAMP (2025) |
 | REF-031 | AI Governance Market Report — $309M to $1.42B (2025–2030) | Grand View Research / MarketsandMarkets |
 | REF-032 | NIST AI Agent Standards Initiative — Comment Period | NIST (Feb–Apr 2026) |
+
+---
+
+## 15. Companion Documents
+
+The following documents provide additional detail on topics introduced in this specification:
+
+- **WCP Identity, Namespace, and Taxonomy Model** (`WCP_IDENTITY_NAMESPACE_AND_TAXONOMY_MODEL.md`) — defines the four-layer identity model (capability, worker species, worker identity, authority namespace), the separation between protocol namespaces and authority namespaces, and the rules for trust attribution.
+
+- **WCP Python Worker E2E Canonical Reference** (`WCP_PYTHON_WORKER_E2E_CANONICAL_REFERENCE.md`) — defines the canonical Python worker package layout, the 8-section file model, the two valid usage paths (full package vs. API-only), and the end-to-end execution flow for WCP-governed Python workers.
 
 ---
 
