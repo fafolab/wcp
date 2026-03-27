@@ -1,0 +1,19 @@
+when:
+  - branch: main
+    event: [push, manual]
+
+steps:
+  - name: mirror-to-github
+    image: alpine/git:latest
+    environment:
+      GITHUB_MIRROR_KEY:
+        from_secret: github_mirror_key
+    commands:
+      - mkdir -p ~/.ssh
+      - echo "$GITHUB_MIRROR_KEY" > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+      - git remote add github git@github.com:workerclassprotocol/wcp.git || git remote set-url github git@github.com:workerclassprotocol/wcp.git
+      - git push github main --force
+      - git push github --tags --force
+      - echo "Mirrored to GitHub successfully"
